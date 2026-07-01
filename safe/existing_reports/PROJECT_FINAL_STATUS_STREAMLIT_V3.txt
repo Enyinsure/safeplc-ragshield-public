@@ -1,0 +1,30 @@
+S7-1500 / ET 200MP 中文手册多模态 RAG v1 项目状态：
+
+完成。
+
+版本：
+Streamlit v3 展示版
+
+最终展示包：
+~/S7_MULTIMODAL_RAG_V1_STREAMLIT_V3_DEMO.tar.gz
+
+校验文件：
+~/S7_MULTIMODAL_RAG_V1_STREAMLIT_V3_DEMO.sha256
+
+文件清单：
+~/S7_MULTIMODAL_RAG_V1_STREAMLIT_V3_DEMO_manifest.txt
+
+前端入口：
+~/s7_multimodal_v1/app_streamlit.py
+
+后端入口：
+~/s7_multimodal_v1/ask_s7_multimodal_final.py
+
+启动脚本：
+~/run_streamlit_s7_rag.sh
+
+验收结果：
+核心命令行验收通过。
+压力测试 25 条全部通过。
+Streamlit v3 前端联调通过。
+figure 路由支持显示图文证据图片。

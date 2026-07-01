@@ -1,0 +1,23 @@
+Trusted RAG database status:
+
+Environment:
+- conda env: s7rag_ui
+- Python: ~/miniconda3/envs/s7rag_ui/bin/python
+- chromadb: 1.5.9
+
+Main text/table Chroma DB:
+- path: ~/s7_chroma_db_v3_tables
+- safe link: safe/data/s7_chroma_db_current
+- collection: s7_1500_manual
+- count: 16628
+
+Figure/multimodal Chroma DB:
+- path: ~/s7_multimodal_v1/index/chroma_figures_v1
+- safe link: safe/data/chroma_figures_current
+- collection: s7_figures_v1
+- count: 37
+
+Conclusion:
+- RAG database exists.
+- ChromaDB can be opened.
+- The trusted RAG security layer should use safe/data/s7_chroma_db_current and safe/data/chroma_figures_current.

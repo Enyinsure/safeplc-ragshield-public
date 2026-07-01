@@ -1,0 +1,80 @@
+S7-1500 / ET 200MP 中文手册多模态 RAG v1
+Agent v2 最终全量离线恢复测试完成。
+
+一、最终版本能力
+
+1. 文本 RAG v3
+2. 表格增强 RAG
+3. 多模态图文 RAG v1
+4. Streamlit v3 图文证据展示
+5. Safety Guard v1 工业安全护栏
+6. Agent v1 主动推理环
+7. Agent v2 多轮澄清 / 自动追问 / 交互式前端
+8. 最终交付包 sha256 校验
+9. 全新目录解包恢复测试
+10. 命令行问答恢复测试
+11. 高风险安全拒答恢复测试
+12. Agent v2 前端 py_compile 静态可启动性检查
+
+二、最终交付包
+
+~/S7_MULTIMODAL_RAG_V1_AGENT_V2_FULL_RESTORE_OK.tar.gz
+
+三、最终 sha256
+
+~/S7_MULTIMODAL_RAG_V1_AGENT_V2_FULL_RESTORE_OK.sha256
+
+四、最终 manifest
+
+~/S7_MULTIMODAL_RAG_V1_AGENT_V2_FULL_RESTORE_OK_manifest.txt
+
+五、最终恢复测试报告
+
+~/full_offline_restore_test_agent_v2.md
+
+六、运行方式
+
+命令行 Agent v2：
+
+conda activate s7rag
+
+python ~/s7_multimodal_v1/ask_s7_agent_v2.py "某个模块的电源电压允许范围是多少"
+
+python ~/s7_multimodal_v1/ask_s7_agent_v2.py "某个模块的电源电压允许范围是多少" --context "PS 60W 24/48/60VDC HF"
+
+Agent v2 前端：
+
+conda activate s7rag_ui
+
+bash ~/run_streamlit_s7_rag_agent_v2.sh
+
+七、环境说明
+
+后端命令行环境：
+s7rag
+
+前端 Streamlit 环境：
+s7rag_ui
+
+说明：
+最终恢复测试在 s7rag 后端环境中完成，streamlit 导入失败属于预期环境差异；
+前端应使用 s7rag_ui 环境启动。
+
+八、封版结论
+
+S7 多模态 RAG v1 Agent v2 最终交付版本通过全量离线恢复测试，可以作为最终交付版本。
+
+九、前端实机验收
+
+Agent v2 Streamlit 前端已完成实机验收：
+
+1. 无上下文参数问题可触发澄清。
+2. 补充上下文后可继续执行。
+3. PROFINET / HMI 图文问题可正常返回证据。
+4. 高风险问题可触发 Safety Guard v1 完整拒答。
+
+前端验收报告：
+~/frontend_agent_v2_acceptance_report.md
+
+最终前端结论：
+Agent v2 Streamlit 前端实机验收通过。

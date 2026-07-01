@@ -1,0 +1,99 @@
+{
+  "generated_at": "2026-07-01T17:27:00",
+  "suite_id": "adversarial_1000",
+  "case_count": 1000,
+  "poison_count": 1086,
+  "by_split": {
+    "benign": 100,
+    "mixed_attack": 250,
+    "single_attack": 650
+  },
+  "by_level": {
+    "L1": 148,
+    "L2": 170,
+    "L3": 203,
+    "L4": 254,
+    "L5": 225
+  },
+  "by_owasp": {
+    "LLM01": 194,
+    "LLM02": 101,
+    "LLM03": 69,
+    "LLM04": 234,
+    "LLM05": 83,
+    "LLM06": 93,
+    "LLM07": 101,
+    "LLM08": 142,
+    "LLM09": 103,
+    "LLM10": 50
+  },
+  "by_family": {
+    "benign_control": 100,
+    "cross_modal_vector_misinformation": 20,
+    "direct_plus_retrieval_poison": 42,
+    "direct_prompt_injection": 90,
+    "excessive_agency": 65,
+    "improper_output_handling": 55,
+    "indirect_plus_vector_weakness": 42,
+    "output_handling_plus_agency": 28,
+    "poison_plus_misinformation": 38,
+    "prompt_plus_unbounded_consumption": 20,
+    "retrieval_poisoning": 110,
+    "sensitive_disclosure": 65,
+    "sensitive_plus_prompt_leakage": 36,
+    "supply_chain_plus_poison": 24,
+    "supply_chain_spoof": 45,
+    "system_prompt_leakage": 65,
+    "technical_misinformation": 45,
+    "unbounded_consumption": 30,
+    "vector_embedding_weakness": 80
+  },
+  "by_modality_complexity": {
+    "multimodal": 406,
+    "single_modal": 594
+  },
+  "by_poison_modality": {
+    "image": 288,
+    "table": 362,
+    "text": 436
+  },
+  "owasp_reference": {
+    "LLM01": "Prompt Injection",
+    "LLM02": "Sensitive Information Disclosure",
+    "LLM03": "Supply Chain",
+    "LLM04": "Data and Model Poisoning",
+    "LLM05": "Improper Output Handling",
+    "LLM06": "Excessive Agency",
+    "LLM07": "System Prompt Leakage",
+    "LLM08": "Vector and Embedding Weaknesses",
+    "LLM09": "Misinformation",
+    "LLM10": "Unbounded Consumption"
+  },
+  "files": {
+    "all_cases": "benchmark/cases/adversarial_1000/adversarial_1000_all.jsonl",
+    "benign": "benchmark/cases/adversarial_1000/benign_control_100.jsonl",
+    "single_attack": "benchmark/cases/adversarial_1000/single_attack_650.jsonl",
+    "mixed_attack": "benchmark/cases/adversarial_1000/mixed_attack_250.jsonl",
+    "poison_corpus": "benchmark/poison_corpus/adversarial_1000_poison.jsonl"
+  },
+  "config": {
+    "seed": 20260629,
+    "suite_id": "adversarial_1000",
+    "suite_config": {
+      "case_count": 1000,
+      "benign_count": 100,
+      "single_attack_count": 650,
+      "mixed_attack_count": 250
+    },
+    "text_chunks": "s7_raw_materials/s7_rag_processed/s7_chunks_v3_tables.jsonl",
+    "table_chunks": "s7_raw_materials/s7_rag_processed/s7_table_chunks_v4.jsonl",
+    "visual_cards": "s7_raw_materials/s7_multimodal_v2_mineru/figure_cards/all_visual_cards_v2.jsonl",
+    "source_counts": {
+      "text": 16628,
+      "table": 3,
+      "table_surrogate": 900,
+      "visual": 854
+    },
+    "dry_run": false
+  }
+}

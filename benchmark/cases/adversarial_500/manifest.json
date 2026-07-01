@@ -1,0 +1,91 @@
+{
+  "generated_at": "2026-06-29T14:33:09",
+  "suite_id": "adversarial_500",
+  "case_count": 500,
+  "poison_count": 418,
+  "by_split": {
+    "benign": 50,
+    "mixed_attack": 100,
+    "single_attack": 350
+  },
+  "by_level": {
+    "L1": 79,
+    "L2": 90,
+    "L3": 102,
+    "L4": 124,
+    "L5": 105
+  },
+  "by_owasp": {
+    "LLM01": 94,
+    "LLM02": 49,
+    "LLM03": 35,
+    "LLM04": 110,
+    "LLM05": 40,
+    "LLM06": 45,
+    "LLM07": 49,
+    "LLM08": 70,
+    "LLM09": 47,
+    "LLM10": 18
+  },
+  "by_family": {
+    "benign_control": 50,
+    "cross_modal_vector_misinformation": 7,
+    "direct_plus_retrieval_poison": 18,
+    "direct_prompt_injection": 50,
+    "excessive_agency": 35,
+    "improper_output_handling": 30,
+    "indirect_plus_vector_weakness": 18,
+    "output_handling_plus_agency": 10,
+    "poison_plus_misinformation": 15,
+    "prompt_plus_unbounded_consumption": 8,
+    "retrieval_poisoning": 60,
+    "sensitive_disclosure": 35,
+    "sensitive_plus_prompt_leakage": 14,
+    "supply_chain_plus_poison": 10,
+    "supply_chain_spoof": 25,
+    "system_prompt_leakage": 35,
+    "technical_misinformation": 25,
+    "unbounded_consumption": 10,
+    "vector_embedding_weakness": 45
+  },
+  "by_modality_complexity": {
+    "multimodal": 112,
+    "single_modal": 388
+  },
+  "by_poison_modality": {
+    "image": 94,
+    "table": 131,
+    "text": 193
+  },
+  "owasp_reference": {
+    "LLM01": "Prompt Injection",
+    "LLM02": "Sensitive Information Disclosure",
+    "LLM03": "Supply Chain",
+    "LLM04": "Data and Model Poisoning",
+    "LLM05": "Improper Output Handling",
+    "LLM06": "Excessive Agency",
+    "LLM07": "System Prompt Leakage",
+    "LLM08": "Vector and Embedding Weaknesses",
+    "LLM09": "Misinformation",
+    "LLM10": "Unbounded Consumption"
+  },
+  "files": {
+    "all_cases": "benchmark/cases/adversarial_500/adversarial_500_all.jsonl",
+    "benign": "benchmark/cases/adversarial_500/benign_control_050.jsonl",
+    "single_attack": "benchmark/cases/adversarial_500/single_attack_350.jsonl",
+    "mixed_attack": "benchmark/cases/adversarial_500/mixed_attack_100.jsonl",
+    "poison_corpus": "benchmark/poison_corpus/adversarial_500_poison.jsonl"
+  },
+  "config": {
+    "seed": 20260629,
+    "text_chunks": "s7_raw_materials/s7_rag_processed/s7_chunks_v3_tables.jsonl",
+    "table_chunks": "s7_raw_materials/s7_rag_processed/s7_table_chunks_v4.jsonl",
+    "visual_cards": "s7_raw_materials/s7_multimodal_v2_mineru/figure_cards/all_visual_cards_v2.jsonl",
+    "source_counts": {
+      "text": 16628,
+      "table": 3,
+      "visual": 854
+    },
+    "dry_run": false
+  }
+}

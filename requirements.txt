@@ -1,0 +1,51 @@
+# SafePLC / S7 multimodal trusted RAG full-test environment.
+# Target Python: 3.10.x. The original server snapshot used Python 3.10.20.
+#
+# Notes:
+# - Target GPU profile: RTX 5090 / sm_120 on a driver that reports CUDA 13.0.
+# - PyTorch 2.6.0+cu124 is too old for this GPU generation; it only advertises
+#   support through sm_90 in the observed environment.
+# - Prefer PyTorch CUDA 13.0 wheels. If the cluster mirror does not provide
+#   cu130 yet, use the official cu128 wheel line as the fallback, not cu124.
+# - Qwen2.5-VL model weights are not installed by this file.
+#   Configure the local model path in safe/configs/local_paths.env:
+#     SAFE_LLM_MODEL_DIR=models/Qwen/Qwen2.5-VL-7B-Instruct
+# - BGE embedding weights are also local assets; set SAFE_EMBEDDING_MODEL_DIR,
+#   for example:
+#     SAFE_EMBEDDING_MODEL_DIR=models/BGE
+
+# PyTorch CUDA wheels. This lets `pip install -r requirements.txt` find cu130
+# builds while still using PyPI for the rest of the stack.
+--extra-index-url https://download.pytorch.org/whl/cu130
+
+# Core numerical / ML stack
+torch==2.11.0+cu130
+torchvision==0.26.0+cu130
+torchaudio==2.11.0+cu130
+numpy>=1.26,<3
+
+# Qwen2.5 / Qwen2.5-VL local inference
+transformers>=4.49,<5
+accelerate>=0.34,<2
+safetensors>=0.4.5,<1
+qwen-vl-utils[decord]>=0.0.8,<1
+modelscope>=1.18,<2
+sentencepiece>=0.2,<1
+tiktoken>=0.7,<1
+
+# Embedding + Chroma RAG
+sentence-transformers>=3.0,<4
+chromadb>=1.5.9,<2
+
+# PDF / image processing for MinerU-derived visual assets and page rendering
+PyMuPDF>=1.24,<2
+Pillow>=10,<12
+
+# Streamlit frontend demos
+streamlit>=1.36,<2
+
+# Utility dependencies used by model / app stacks
+tqdm>=4.66,<5
+requests>=2.32,<3
+packaging>=24,<26
+protobuf>=4.25,<6

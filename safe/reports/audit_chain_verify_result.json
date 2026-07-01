@@ -1,0 +1,22 @@
+{
+  "original": {
+    "ok": true,
+    "count": 3,
+    "errors": [],
+    "root_hash": "c764a291f58f576e95dc0709fc97e9271fe390be3dbd9ea06128f3909eca0f3f",
+    "tamper_detected": false,
+    "verified_at": "2026-06-28T10:12:47.727787Z",
+    "signature_algorithm": "SM2-compatible-demo"
+  },
+  "tampered": {
+    "ok": false,
+    "count": 3,
+    "errors": [
+      "evt_mepi_002: current_hash mismatch"
+    ],
+    "root_hash": "c764a291f58f576e95dc0709fc97e9271fe390be3dbd9ea06128f3909eca0f3f",
+    "tamper_detected": true,
+    "verified_at": "2026-06-28T10:12:47.727885Z",
+    "signature_algorithm": "SM2-compatible-demo"
+  }
+}

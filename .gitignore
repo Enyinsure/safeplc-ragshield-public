@@ -1,0 +1,98 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environments
+.venv/
+venv/
+env/
+.env
+*.env
+
+# Large/private RAG data
+/models/
+s7_chroma_db*/
+s7_multimodal_v1/
+/s7_raw_materials/
+s7_rag_processed/
+s7_full_chunks.jsonl
+s7_full_pages.jsonl
+1500_manual_collection_zh-CHS_zh-CHS.pdf
+*.pdf
+
+# Chroma vector/index binary files
+**/data_level0.bin
+**/header.bin
+**/length.bin
+**/link_lists.bin
+**/index_metadata.pickle
+**/*.parquet
+**/*.pkl
+**/*.faiss
+
+# Archives
+*.tar.gz
+*.zip
+*.7z
+
+# Runtime reports
+benchmark/results/
+benchmark/runtime/
+safe/reports/audit_logs/
+safe/reports/audit_bundles/
+safe/reports/eval/
+safe/reports/manifests/
+safe/reports/*.csv
+safe/reports/*summary.json
+safe/reports/*SUMMARY*.json
+safe/reports/FINAL_SECURITY_EVIDENCE_REPORT_*.md
+safe/reports/FULL_FINAL_VALIDATION_*.txt
+safe/reports/*_REPORT_*.md
+safe/reports/*_SUMMARY_*.json
+safe/reports/ONLINE_BENCHMARK_COMPARISON_REPORT.md
+safe/reports/ONLINE_BENCHMARK_COMPARISON_SUMMARY.json
+safe/reports/security_guard_regression_summary.json
+safe/reports/GM_AUDIT_TAMPER_MATRIX_*.md
+safe/reports/GM_AUDIT_TAMPER_MATRIX_*.json
+
+# Local GM keys
+safe/configs/gm_keys/
+
+# Local generated data / indexes / logs
+safe/data/
+SAFEPLC_*_VALIDATION_*.txt
+*_VALIDATION_*.txt
+
+# Generated benchmark poison corpora may include source-derived snippets.
+benchmark/poison_corpus/*.jsonl
+benchmark/poison_corpus/*.stats.json
+!benchmark/poison_corpus/README.md
+
+# Local config
+.DS_Store
+**/.DS_Store
+safe/configs/local_paths.env
+safe/configs/local_paths.env.bak_*
+
+# SQLite / local DB files
+*.sqlite3
+*.sqlite
+*.db
+db_schema_only/*.sqlite3
+
+# SQLite / local DB files
+*.sqlite3
+*.sqlite
+*.db
+db_schema_only/*.sqlite3
+db_schema_only/*.db
+
+# Large / raw artifacts
+*.jpg
+*.jpeg
+*.png

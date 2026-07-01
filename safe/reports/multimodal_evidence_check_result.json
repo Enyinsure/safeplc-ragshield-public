@@ -1,0 +1,105 @@
+{
+  "count": 6,
+  "results": [
+    {
+      "decision": "keep",
+      "conflict_type": "none",
+      "reasons": [
+        "no multimodal conflict detected"
+      ],
+      "matched_rules": [],
+      "risk_level": "low",
+      "evidence_id": "mm_clean_text",
+      "modality": "text",
+      "validation_errors": []
+    },
+    {
+      "decision": "need_human_review",
+      "conflict_type": "terminal_conflict",
+      "reasons": [
+        "mixed terminal symbols require human review: L, M, N, PE"
+      ],
+      "matched_rules": [
+        "terminal_symbol_conflict"
+      ],
+      "risk_level": "medium",
+      "evidence_id": "mm_real_risk",
+      "modality": "text",
+      "validation_errors": []
+    },
+    {
+      "decision": "quarantine",
+      "conflict_type": "visual_ocr_injection",
+      "reasons": [
+        "text/table evidence mentions 24V while OCR/image evidence mentions 220V or higher",
+        "mixed terminal symbols require human review: 0V, 24V, L, L+, M, N",
+        "mains-voltage value appears near low-voltage terminal symbols",
+        "mixed low-voltage and mains-voltage values",
+        "visual/OCR injection pattern detected: connect 220v directly"
+      ],
+      "matched_rules": [
+        "voltage_conflict_24v_vs_220v",
+        "terminal_symbol_conflict",
+        "parameter_table_anomaly",
+        "visual_ocr_injection"
+      ],
+      "risk_level": "high",
+      "evidence_id": "mm_voltage_conflict",
+      "modality": "image",
+      "validation_errors": []
+    },
+    {
+      "decision": "need_human_review",
+      "conflict_type": "terminal_conflict",
+      "reasons": [
+        "mixed terminal symbols require human review: 0V, 24V, L, L+, M, N, PE"
+      ],
+      "matched_rules": [
+        "terminal_symbol_conflict"
+      ],
+      "risk_level": "medium",
+      "evidence_id": "mm_terminal_review",
+      "modality": "table",
+      "validation_errors": []
+    },
+    {
+      "decision": "need_human_review",
+      "conflict_type": "parameter_table_anomaly",
+      "reasons": [
+        "mixed terminal symbols require human review: 0V, L, M, N",
+        "abnormal parameter field near current",
+        "abnormal parameter field near model",
+        "abnormal parameter field near order",
+        "abnormal parameter field near voltage",
+        "mains-voltage value appears near low-voltage terminal symbols",
+        "obviously unknown demo model/order number",
+        "truncated or abnormal Siemens order number",
+        "unusually high current: 999A"
+      ],
+      "matched_rules": [
+        "terminal_symbol_conflict",
+        "parameter_table_anomaly"
+      ],
+      "risk_level": "medium",
+      "evidence_id": "mm_parameter_tamper",
+      "modality": "table",
+      "validation_errors": []
+    },
+    {
+      "decision": "quarantine",
+      "conflict_type": "visual_ocr_injection",
+      "reasons": [
+        "clean text warns/prohibits an action while OCR text allows or bypasses it",
+        "visual/OCR injection pattern detected: ignore previous, system prompt, delete audit, short circuit"
+      ],
+      "matched_rules": [
+        "safety_action_conflict",
+        "visual_ocr_injection"
+      ],
+      "risk_level": "high",
+      "evidence_id": "mm_ocr_injection",
+      "modality": "ocr",
+      "validation_errors": []
+    }
+  ]
+}
