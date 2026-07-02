@@ -23,12 +23,14 @@ ACTION_LABELS = {
 
 def status_tone(status: str | bool | None) -> str:
     value = str(status).lower()
-    if value in {"trusted", "pass", "passed", "true", "answer", "allow"}:
+    if value in {"trusted", "pass", "passed", "true", "answer", "allow", "called"}:
         return "trusted"
     if value in {"clarify", "info"}:
         return "clarify"
     if value in {"out_of_scope", "skipped"}:
         return "out_of_scope"
+    if value in {"fallback_error", "qwen_general"}:
+        return "suspicious"
     if value in {"suspicious", "warning", "safe_template"}:
         return "suspicious"
     if value in {"blocked", "blocked_poison", "refuse", "critical", "high"}:
@@ -99,12 +101,13 @@ def render_answer(answer: dict) -> None:
 
 
 def render_metric_row(metrics: dict) -> None:
-    cols = st.columns(5)
+    cols = st.columns(6)
     cols[0].metric("风险等级", metrics.get("risk_level", "-"))
     cols[1].metric("证据数", metrics.get("evidence_count", 0))
     cols[2].metric("可信证据", metrics.get("trusted_evidence_count", 0))
     cols[3].metric("阻断证据", metrics.get("blocked_evidence_count", 0))
-    cols[4].metric("审计写入", str(metrics.get("audit_written", False)))
+    cols[4].metric("LLM 调用", str(metrics.get("llm_called", False)))
+    cols[5].metric("审计写入", str(metrics.get("audit_written", False)))
 
 
 def dataframe_from_records(records: list[dict]) -> list[dict]:

@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from .demo_backend import run_demo_pipeline
+from .qwen_general import qwen_general_answer
 
 
 def _demo_config(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -45,22 +46,90 @@ def _try_real_backend(query: str, config: Dict[str, Any]) -> Dict[str, Any] | No
         return {"_adapter_error": f"{type(exc).__name__}: {exc}"}
 
 
+def _maybe_apply_qwen_general(query: str, trace: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
+    """Call local Qwen for safe non-industrial questions after Domain Guard."""
+
+    if config.get("generator", "qwen") != "qwen":
+        return trace
+    if config.get("retrieval_only"):
+        return trace
+    policy = trace.get("policy", {})
+    answer = trace.get("answer", {})
+    if policy.get("action") != "out_of_scope" or answer.get("type") != "out_of_scope":
+        return trace
+
+    result = qwen_general_answer(
+        query,
+        max_new_tokens=int(config.get("qwen_max_new_tokens", 256)),
+        temperature=float(config.get("qwen_temperature", 0.0)),
+        top_p=float(config.get("qwen_top_p", 0.9)),
+    )
+    generation = {
+        "mode": "qwen_general",
+        "status": "called" if result.get("ok") else "fallback_error",
+        "called": bool(result.get("ok")),
+        "latency_ms": result.get("latency_ms", 0),
+        "reason": (
+            "Domain Guard 判定为安全的非工业知识库问题，跳过工业检索后调用本地 Qwen 生成通用回答。"
+            if result.get("ok")
+            else "Domain Guard 判定为安全的非工业知识库问题，但本地 Qwen 不可用，保留安全兜底回答。"
+        ),
+    }
+    if result.get("ok"):
+        trace["answer"] = {
+            **answer,
+            "type": "out_of_scope",
+            "content": result.get("answer") or answer.get("content", ""),
+            "generator": "qwen_general",
+        }
+        trace["backend_mode"] = f"{trace.get('backend_mode', 'demo')}+qwen_general"
+        trace["policy"] = {**policy, "llm_called": True}
+        trace["metrics"] = {
+            **trace.get("metrics", {}),
+            "llm_called": True,
+            "qwen_called": True,
+            "qwen_latency_ms": result.get("latency_ms", 0),
+        }
+        trace.setdefault("logs", []).append("[Qwen General] local Qwen generated a safe out-of-scope answer")
+    else:
+        generation["error"] = result.get("error", "unknown")
+        trace["metrics"] = {
+            **trace.get("metrics", {}),
+            "qwen_called": False,
+            "qwen_error": result.get("error", "unknown"),
+        }
+        trace.setdefault("logs", []).append(
+            f"[Qwen General] skipped because local Qwen was unavailable: {result.get('error', 'unknown')}"
+        )
+    trace["generation"] = generation
+    return trace
+
+
 def run_pipeline(query: str, config: Dict[str, Any]) -> Dict[str, Any]:
     """Run real backend when available, otherwise return a unified demo trace."""
 
     backend_mode = config.get("backend_mode", "demo")
+    guard_trace = run_demo_pipeline(query, **_demo_config(config))
+
+    # Domain Guard and high-risk policy decisions run before any industrial
+    # retrieval backend. Safe out-of-scope questions may still call Qwen, but
+    # they must not use Chroma/BGE industrial evidence.
+    if guard_trace.get("policy", {}).get("action") != "answer":
+        if backend_mode == "real":
+            guard_trace["backend_mode"] = "domain_guard"
+        return _maybe_apply_qwen_general(query, guard_trace, config)
+
     if backend_mode == "real":
         result = _try_real_backend(query, config)
         if result and "_adapter_error" not in result:
             return result
-        trace = run_demo_pipeline(query, **_demo_config(config))
-        trace["backend_mode"] = "demo_fallback"
-        trace["retrieval"]["fallback"] = True
-        trace["backend_warning"] = (
+        guard_trace["backend_mode"] = "demo_fallback"
+        guard_trace["retrieval"]["fallback"] = True
+        guard_trace["backend_warning"] = (
             "真实后端暂不可用，当前使用 demo backend 渲染安全链路。"
             f" 适配器信息：{result.get('_adapter_error') if result else 'unknown'}"
         )
-        trace["logs"].append("[Adapter] real backend unavailable; fallback to demo backend")
-        return trace
+        guard_trace["logs"].append("[Adapter] real backend unavailable; fallback to demo backend")
+        return _maybe_apply_qwen_general(query, guard_trace, config)
 
-    return run_demo_pipeline(query, **_demo_config(config))
+    return _maybe_apply_qwen_general(query, guard_trace, config)

@@ -67,6 +67,7 @@ def _run_current_query(retrieval_only: bool = False) -> None:
     if retrieval_only:
         config.update(
             {
+                "retrieval_only": True,
                 "enable_query_scan": False,
                 "enable_evidence_scan": False,
                 "enable_mepi": False,
@@ -156,6 +157,8 @@ def render_chain_status(trace: dict) -> None:
     render_chain_card("M-EPI", trace.get("mepi", {}))
     render_chain_card("Consistency Check", trace.get("consistency", {}))
     render_chain_card("Risk Policy", trace.get("policy", {}), status_key="action")
+    if trace.get("generation"):
+        render_chain_card("Qwen General Generation", trace.get("generation", {}))
     audit_data = trace.get("audit", {})
     render_chain_card(
         "SM3 Hash-chain Audit",
