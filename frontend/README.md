@@ -1,6 +1,19 @@
 # SafePLC-RAGShield Frontend
 
-Static dashboard prototype for public demos and proposal screenshots.
+Frontend prototypes for public demos and proposal screenshots.
+
+## Streamlit security-chain demo
+
+Run from the repository root:
+
+```bash
+streamlit run app_frontend.py --server.address 0.0.0.0 --server.port 8501
+```
+
+This app renders a unified `trace` dict from `core/demo_backend.py`, so it can
+run independently when the real RAG backend is not available.
+
+## Static dashboard
 
 Open `index.html` directly, or serve the repository root:
 

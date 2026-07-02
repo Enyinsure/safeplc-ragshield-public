@@ -8,10 +8,17 @@ Main task: see `CODEX_TASK.md`.
 
 ## Frontend demo
 
-A static proposal/demo dashboard is available in `frontend/`. It contains the
-public-safe benchmark summary, ablation table, attack-family view, and audit-chain
-flow without bundling private datasets, model weights, runtime logs, or external
-competition images.
+Two public-safe frontend demos are available. They do not bundle private datasets,
+model weights, runtime logs, server paths, tokens, private keys, vector indexes,
+raw industrial manuals, or external competition images.
+
+Streamlit security-chain demo:
+
+```bash
+streamlit run app_frontend.py --server.address 0.0.0.0 --server.port 8501
+```
+
+Static proposal dashboard:
 
 ```bash
 python -m http.server 4173
