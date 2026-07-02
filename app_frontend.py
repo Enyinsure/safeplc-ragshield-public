@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from core.demo_backend import load_demo_cases, run_demo_pipeline
+from core.demo_backend import load_demo_cases
 from frontend.render_audit import render_audit_center
 from frontend.render_benchmark import render_benchmark_analysis
 from frontend.render_style import apply_global_style
@@ -22,20 +22,18 @@ st.set_page_config(
 
 def _init_session_state() -> None:
     demo_cases = load_demo_cases()
-    default_query = demo_cases[0]["query"] if demo_cases else ""
+    default_query = ""
     defaults = {
         "current_query": default_query,
         "query_input": default_query,
         "current_trace": None,
         "history_queries": [],
         "history_runs": [],
-        "selected_demo": demo_cases[0]["name"] if demo_cases else "",
+        "selected_demo_case": demo_cases[0]["name"] if demo_cases else "",
         "backend_mode": "demo",
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
-    if st.session_state.current_trace is None and default_query:
-        st.session_state.current_trace = run_demo_pipeline(default_query)
 
 
 def _render_sidebar() -> None:

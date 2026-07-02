@@ -57,6 +57,29 @@ def _set_query_input(query: str) -> None:
     st.session_state.query_input = query
 
 
+def _run_current_query(retrieval_only: bool = False) -> None:
+    query = st.session_state.get("query_input", "").strip()
+    if not query:
+        st.warning("请输入问题后再运行。")
+        return
+
+    config = _config_from_state()
+    if retrieval_only:
+        config.update(
+            {
+                "enable_query_scan": False,
+                "enable_evidence_scan": False,
+                "enable_mepi": False,
+                "enable_consistency": False,
+            }
+        )
+
+    trace = run_pipeline(query, config)
+    if retrieval_only:
+        trace.setdefault("logs", []).append("[Frontend] retrieval-only mode requested")
+    _save_run(trace)
+
+
 def render_query_input() -> None:
     demo_cases = load_demo_cases()
     demo_map = {case["name"]: case for case in demo_cases}
@@ -77,16 +100,13 @@ def render_query_input() -> None:
 
     load_col, button_col = st.columns([3, 1])
     with load_col:
-        selected = st.selectbox("加载 demo 样例", list(demo_map.keys()), key="selected_demo")
+        selected = st.selectbox("加载 demo 样例", list(demo_map.keys()), key="selected_demo_case")
     with button_col:
         st.write("")
         st.write("")
-        st.button(
-            "加载样例到输入框",
-            use_container_width=True,
-            on_click=_set_query_input,
-            args=(demo_map[selected]["query"],),
-        )
+        if st.button("加载样例到输入框", use_container_width=True):
+            st.session_state["query_input"] = demo_map[selected]["query"]
+            st.rerun()
 
     st.text_area(
         "请输入工业知识问题或安全测试样例",
@@ -120,15 +140,10 @@ def render_query_input() -> None:
     run_col, retrieve_col, clear_col = st.columns([1, 1, 1])
     with run_col:
         if st.button("运行完整链路", type="primary", use_container_width=True):
-            trace = run_pipeline(st.session_state.get("query_input", ""), _config_from_state())
-            _save_run(trace)
+            _run_current_query(retrieval_only=False)
     with retrieve_col:
         if st.button("仅检索证据", use_container_width=True):
-            config = _config_from_state()
-            config.update({"enable_query_scan": False, "enable_evidence_scan": False, "enable_mepi": False, "enable_consistency": False})
-            trace = run_pipeline(st.session_state.get("query_input", ""), config)
-            trace["logs"].append("[Frontend] retrieval-only mode requested")
-            _save_run(trace)
+            _run_current_query(retrieval_only=True)
     with clear_col:
         st.button("清空输入", use_container_width=True, on_click=_set_query_input, args=("",))
 
@@ -171,11 +186,25 @@ def render_detail_tabs(trace: dict) -> None:
             st.code(line)
 
 
+def render_debug_panel(trace: dict | None) -> None:
+    with st.expander("Debug：运行输入状态", expanded=False):
+        st.write(
+            {
+                "query_input": st.session_state.get("query_input", ""),
+                "current_trace.query": trace.get("query") if trace else None,
+                "selected_demo_case": st.session_state.get("selected_demo_case", ""),
+                "backend_mode": trace.get("backend_mode") if trace else st.session_state.get("backend_mode", ""),
+                "configured_backend_mode": st.session_state.get("backend_mode", ""),
+            }
+        )
+
+
 def render_workspace() -> None:
     render_query_input()
     trace = st.session_state.get("current_trace")
     if not trace:
         st.info("请输入问题并点击“运行完整链路”。")
+        render_debug_panel(trace)
         return
     if trace.get("backend_warning"):
         st.warning(trace["backend_warning"])
@@ -192,3 +221,4 @@ def render_workspace() -> None:
         render_metric_row(trace.get("metrics", {}))
 
     render_detail_tabs(trace)
+    render_debug_panel(trace)

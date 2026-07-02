@@ -46,7 +46,12 @@ def load_demo_cases() -> List[dict]:
     ]
 
 
-def _classify_query(query: str) -> dict:
+def _is_s7_intro_query(query: str) -> bool:
+    lowered = query.lower().replace(" ", "")
+    return "s7-1500" in lowered and any(keyword in query for keyword in ["是什么", "介绍", "简介", "说明"])
+
+
+def classify_query(query: str) -> dict:
     sensitive_keywords = ["系统提示词", "prompt", "token", "路径", "配置文件", "私钥", "内部安全规则"]
     dangerous_keywords = ["强制", "绕过", "关闭保护", "联锁", "高电平", "直接启动", "强制输出", "Q0.0"]
     poison_keywords = ["召回资料", "新版说明书", "隐藏说明", "根据资料", "忽略原手册", "检索证据", "引用检索证据"]
@@ -93,6 +98,21 @@ def _make_evidence(query: str, classification: dict, top_k: int, enable_retrieva
     if not enable_retrieval:
         return []
 
+    overview = {
+        "id": "ev_s7_overview_001",
+        "title": "S7-1500 控制器概览",
+        "source": "S7-1500 manual sample",
+        "page": "demo-overview",
+        "image_id": None,
+        "retrieval_score": 0.88,
+        "text": "SIMATIC S7-1500 是西门子面向工业自动化的模块化 PLC 控制器系列，支持控制逻辑、通信、诊断和 I/O 扩展。",
+        "status": "trusted",
+        "trusted": True,
+        "risk_labels": [],
+        "risk_reason": "与 S7-1500 基础介绍类问题相关，未发现注入或污染内容。",
+        "hash": _digest("evidence", "s7 overview"),
+        "used_in_context": True,
+    }
     clean = {
         "id": "ev_001",
         "title": "CPU 故障与诊断缓冲区",
@@ -187,8 +207,33 @@ def _make_evidence(query: str, classification: dict, top_k: int, enable_retrieva
         }
         evidence = [policy_evidence]
     else:
-        evidence = [clean, network]
+        evidence = [overview, clean, network] if _is_s7_intro_query(query) else [clean, network]
     return evidence[: max(1, min(top_k, len(evidence)))]
+
+
+def build_normal_answer(query: str) -> str:
+    if _is_s7_intro_query(query):
+        return (
+            "S7-1500 是西门子 SIMATIC 系列模块化 PLC 控制器，可用于工业自动化控制、通信、"
+            "诊断和 I/O 扩展。它通常由 CPU、电源、信号模块、通信模块和分布式 I/O 等部分组成，"
+            "适用于设备控制、产线联锁、过程监测、故障诊断和与上位系统的数据交换。在实际工程中，"
+            "应结合具体 CPU 型号、订货号、固件版本和现场 I/O 拓扑来确认功能边界。"
+        )
+    if _contains_any(query, ["bf", "profinet", "通信"]):
+        return (
+            "这类问题通常需要先检查 PROFINET 设备名、IP 配置、交换机端口、网络拓扑、站点状态和通信诊断缓冲区。"
+            "如果 BF 灯持续亮起，应记录故障时间、模块型号和网络连接状态，再按可信手册逐项排查。"
+        )
+    if _contains_any(query, ["error", "故障灯", "报警", "诊断"]):
+        return (
+            "建议先查看 CPU 诊断缓冲区与报警时间戳，再检查相关模块状态灯、供电、通信链路和最近的程序或硬件变更。"
+            "排查过程中应保留现场证据，避免直接修改保护逻辑或强制输出。"
+        )
+    return (
+        "这是一个普通低风险工业知识问题。Demo 后端未检测到明显注入、投毒、敏感信息请求或危险控制意图，"
+        "因此返回安全的默认回答：请结合设备型号、订货号、固件版本、报警代码和可信手册进行核验，"
+        "涉及现场控制动作时应遵守安全规程并经过人工复核。"
+    )
 
 
 def _make_answer(action: str, evidence: list[dict], query: str) -> dict:
@@ -223,7 +268,7 @@ def _make_answer(action: str, evidence: list[dict], query: str) -> dict:
         }
     return {
         "type": "answer",
-        "content": "建议先查看 CPU 诊断缓冲区与报警时间戳，再检查 PROFINET 设备名、IP 配置、交换机端口、网络负载和相关模块状态灯。若问题复现，应记录故障时间、站点拓扑和模块订货号后进一步定位。",
+        "content": build_normal_answer(query),
         "citations": trusted_ids,
         "used_evidence_count": len(trusted_ids),
     }
@@ -286,8 +331,8 @@ def run_demo_pipeline(
     enable_audit: bool = True,
 ) -> Trace:
     started = time.perf_counter()
-    query = (query or "").strip() or "请说明 S7-1500 CPU 故障灯亮起时的安全排查步骤。"
-    classification = _classify_query(query) if enable_query_scan else {"kind": "normal", "labels": [], "risk": "low", "action": "answer"}
+    query = (query or "").strip() or "请介绍 S7-1500。"
+    classification = classify_query(query) if enable_query_scan else {"kind": "normal", "labels": [], "risk": "low", "action": "answer"}
     action = classification["action"]
     risk_level = classification["risk"]
 

@@ -54,7 +54,8 @@ def run_pipeline(query: str, config: Dict[str, Any]) -> Dict[str, Any]:
         if result and "_adapter_error" not in result:
             return result
         trace = run_demo_pipeline(query, **_demo_config(config))
-        trace["backend_mode"] = "demo"
+        trace["backend_mode"] = "demo_fallback"
+        trace["retrieval"]["fallback"] = True
         trace["backend_warning"] = (
             "真实后端暂不可用，当前使用 demo backend 渲染安全链路。"
             f" 适配器信息：{result.get('_adapter_error') if result else 'unknown'}"
