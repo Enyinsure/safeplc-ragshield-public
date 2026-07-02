@@ -60,22 +60,27 @@ def _maybe_apply_qwen_general(query: str, trace: Dict[str, Any], config: Dict[st
 
     result = qwen_general_answer(
         query,
-        max_new_tokens=int(config.get("qwen_max_new_tokens", 256)),
+        max_new_tokens=int(config.get("qwen_max_new_tokens", 96)),
         temperature=float(config.get("qwen_temperature", 0.0)),
         top_p=float(config.get("qwen_top_p", 0.9)),
     )
+    quality_failed = bool(result.get("quality_failed"))
+    result_ok = bool(result.get("ok"))
+    qwen_was_called = bool(result.get("called") or result_ok)
     generation = {
         "mode": "qwen_general",
-        "status": "called" if result.get("ok") else "fallback_error",
-        "called": bool(result.get("ok")),
+        "status": "called" if result_ok else ("quality_fallback" if quality_failed else "fallback_error"),
+        "called": qwen_was_called,
         "latency_ms": result.get("latency_ms", 0),
         "reason": (
             "Domain Guard 判定为安全的非工业知识库问题，跳过工业检索后调用本地 Qwen 生成通用回答。"
-            if result.get("ok")
+            if result_ok
+            else "本地 Qwen 已调用，但输出未通过质量闸门，系统已丢弃乱码并回退到安全通用回答。"
+            if quality_failed
             else "Domain Guard 判定为安全的非工业知识库问题，但本地 Qwen 不可用，保留安全兜底回答。"
         ),
     }
-    if result.get("ok"):
+    if result_ok or quality_failed:
         trace["answer"] = {
             **answer,
             "type": "out_of_scope",
@@ -87,10 +92,19 @@ def _maybe_apply_qwen_general(query: str, trace: Dict[str, Any], config: Dict[st
         trace["metrics"] = {
             **trace.get("metrics", {}),
             "llm_called": True,
-            "qwen_called": True,
+            "qwen_called": qwen_was_called,
             "qwen_latency_ms": result.get("latency_ms", 0),
+            "qwen_output_accepted": result_ok,
+            "qwen_quality_fallback": quality_failed,
         }
-        trace.setdefault("logs", []).append("[Qwen General] local Qwen generated a safe out-of-scope answer")
+        if quality_failed:
+            generation["error"] = result.get("error", "quality_gate")
+            generation["raw_answer_excerpt"] = result.get("raw_answer_excerpt", "")
+            trace.setdefault("logs", []).append(
+                f"[Qwen General] output rejected by quality gate: {result.get('error', 'quality_gate')}"
+            )
+        else:
+            trace.setdefault("logs", []).append("[Qwen General] local Qwen generated a safe out-of-scope answer")
     else:
         generation["error"] = result.get("error", "unknown")
         trace["metrics"] = {

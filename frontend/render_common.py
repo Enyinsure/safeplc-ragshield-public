@@ -29,7 +29,7 @@ def status_tone(status: str | bool | None) -> str:
         return "clarify"
     if value in {"out_of_scope", "skipped"}:
         return "out_of_scope"
-    if value in {"fallback_error", "qwen_general"}:
+    if value in {"fallback_error", "quality_fallback", "qwen_general"}:
         return "suspicious"
     if value in {"suspicious", "warning", "safe_template"}:
         return "suspicious"

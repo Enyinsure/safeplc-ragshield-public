@@ -75,7 +75,19 @@ def _run_current_query(retrieval_only: bool = False) -> None:
             }
         )
 
-    trace = run_pipeline(query, config)
+    with st.status("正在执行 SafePLC-RAGShield 链路...", expanded=False) as status:
+        status.write("Domain Guard / Query Scan 正在判断问题范围。")
+        if config.get("generator") == "qwen" and not retrieval_only:
+            status.write("若问题安全但超出工业知识库范围，将尝试调用本地 Qwen；首次加载模型可能较慢。")
+        trace = run_pipeline(query, config)
+        generation = trace.get("generation") or {}
+        if generation.get("status") == "called":
+            status.write("本地 Qwen 已生成回答。")
+        elif generation.get("status") == "quality_fallback":
+            status.write("本地 Qwen 输出未通过质量闸门，已回退为干净答案。")
+        elif generation.get("status") == "fallback_error":
+            status.write("本地 Qwen 暂不可用，已使用安全兜底回答。")
+        status.update(label="链路执行完成", state="complete")
     if retrieval_only:
         trace.setdefault("logs", []).append("[Frontend] retrieval-only mode requested")
     _save_run(trace)
