@@ -12,11 +12,16 @@ Two public-safe frontend demos are available. They do not bundle private dataset
 model weights, runtime logs, server paths, tokens, private keys, vector indexes,
 raw industrial manuals, or external competition images.
 
-Streamlit security-chain demo:
+Streamlit industrial trusted RAG workbench V2:
 
 ```bash
 streamlit run app_frontend.py --server.address 0.0.0.0 --server.port 8501
 ```
+
+The workbench supports free-form user questions, demo-case loading, unified trace
+rendering, evidence cards, policy actions, benchmark analysis, and SM3 audit-chain
+summaries. If `backend_mode=real` is selected but the real backend is unavailable,
+`core/pipeline_adapter.py` falls back to `core/demo_backend.py` without crashing.
 
 Static proposal dashboard:
 

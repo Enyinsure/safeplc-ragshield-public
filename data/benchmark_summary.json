@@ -1,0 +1,90 @@
+{
+  "main_result": {
+    "case_count": 1000,
+    "pass_rate": 93.3,
+    "behavior_pass_rate": 94.3,
+    "attack_block_rate": 90.44,
+    "benign_pass_rate": 100.0,
+    "poison_block_rate": 100.0,
+    "canary_leak_count": 0,
+    "poison_citation_count": 0,
+    "audit_coverage": 100.0,
+    "llm_called_count": 144,
+    "fallback_case_count": 0,
+    "chroma_case_count": 1000
+  },
+  "baseline_comparison": [
+    {
+      "setting": "Naive RAG",
+      "pass_rate": 10.0,
+      "attack_block": 0.0,
+      "poison_block": 0.0,
+      "canary_leak_count": 97,
+      "poison_citation_count": 255
+    },
+    {
+      "setting": "SafePLC-RAGShield",
+      "pass_rate": 93.3,
+      "attack_block": 90.44,
+      "poison_block": 100.0,
+      "canary_leak_count": 0,
+      "poison_citation_count": 0
+    }
+  ],
+  "attack_family": [
+    {"attack_family": "benign_control", "pass_rate": 100.0},
+    {"attack_family": "retrieval_poisoning", "pass_rate": 100.0},
+    {"attack_family": "vector_embedding_weakness", "pass_rate": 100.0},
+    {"attack_family": "supply_chain_spoof", "pass_rate": 100.0},
+    {"attack_family": "technical_misinformation", "pass_rate": 100.0},
+    {"attack_family": "cross_modal_vector_misinformation", "pass_rate": 100.0},
+    {"attack_family": "direct_plus_retrieval_poison", "pass_rate": 100.0},
+    {"attack_family": "indirect_plus_vector_weakness", "pass_rate": 100.0},
+    {"attack_family": "poison_plus_misinformation", "pass_rate": 100.0},
+    {"attack_family": "supply_chain_plus_poison", "pass_rate": 100.0},
+    {"attack_family": "sensitive_plus_prompt_leakage", "pass_rate": 100.0},
+    {"attack_family": "output_handling_plus_agency", "pass_rate": 100.0},
+    {"attack_family": "prompt_plus_unbounded_consumption", "pass_rate": 100.0},
+    {"attack_family": "excessive_agency", "pass_rate": 100.0},
+    {"attack_family": "sensitive_disclosure", "pass_rate": 96.92},
+    {"attack_family": "unbounded_consumption", "pass_rate": 86.67},
+    {"attack_family": "improper_output_handling", "pass_rate": 85.45},
+    {"attack_family": "system_prompt_leakage", "pass_rate": 83.08},
+    {"attack_family": "direct_prompt_injection", "pass_rate": 53.33}
+  ],
+  "owasp": [
+    {"owasp": "LLM01 Prompt Injection", "pass_rate": 78.35},
+    {"owasp": "LLM02 Sensitive Information Disclosure", "pass_rate": 98.02},
+    {"owasp": "LLM03 Supply Chain", "pass_rate": 100.0},
+    {"owasp": "LLM04 Data and Model Poisoning", "pass_rate": 100.0},
+    {"owasp": "LLM05 Improper Output Handling", "pass_rate": 90.36},
+    {"owasp": "LLM06 Excessive Agency", "pass_rate": 100.0},
+    {"owasp": "LLM07 System Prompt Leakage", "pass_rate": 89.11},
+    {"owasp": "LLM08 Vector and Embedding Weaknesses", "pass_rate": 100.0},
+    {"owasp": "LLM09 Misinformation", "pass_rate": 100.0},
+    {"owasp": "LLM10 Unbounded Consumption", "pass_rate": 92.0},
+    {"owasp": "none / benign", "pass_rate": 100.0}
+  ],
+  "difficulty": [
+    {"level": "L1", "pass_rate": 93.92},
+    {"level": "L2", "pass_rate": 95.29},
+    {"level": "L3", "pass_rate": 94.58},
+    {"level": "L4", "pass_rate": 96.06},
+    {"level": "L5", "pass_rate": 87.11}
+  ],
+  "split": [
+    {"split": "benign", "pass_rate": 100.0},
+    {"split": "mixed_attack", "pass_rate": 100.0},
+    {"split": "single_attack", "pass_rate": 89.69}
+  ],
+  "ablation": [
+    {"setting": "full_chain", "pass_rate": 100.0},
+    {"setting": "no_combined_signal", "pass_rate": 81.4},
+    {"setting": "no_evidence_scan", "pass_rate": 72.8},
+    {"setting": "no_ingestion_gate", "pass_rate": 98.6},
+    {"setting": "no_mepi", "pass_rate": 98.6},
+    {"setting": "no_query_scan", "pass_rate": 64.4},
+    {"setting": "no_risk_policy", "pass_rate": 61.0},
+    {"setting": "no_visual_guard", "pass_rate": 100.0}
+  ]
+}

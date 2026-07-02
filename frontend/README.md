@@ -2,7 +2,7 @@
 
 Frontend prototypes for public demos and proposal screenshots.
 
-## Streamlit security-chain demo
+## Streamlit industrial trusted RAG workbench V2
 
 Run from the repository root:
 
@@ -10,8 +10,10 @@ Run from the repository root:
 streamlit run app_frontend.py --server.address 0.0.0.0 --server.port 8501
 ```
 
-This app renders a unified `trace` dict from `core/demo_backend.py`, so it can
-run independently when the real RAG backend is not available.
+This app renders a unified `trace` dict from `core/pipeline_adapter.py`. In demo
+mode, arbitrary user questions are routed through `core/demo_backend.py`. In real
+mode, the adapter attempts to call the project backend and automatically falls
+back to demo mode when the real backend is not available.
 
 ## Static dashboard
 
