@@ -25,6 +25,7 @@ def _init_session_state() -> None:
     default_query = demo_cases[0]["query"] if demo_cases else ""
     defaults = {
         "current_query": default_query,
+        "query_input": default_query,
         "current_trace": None,
         "history_queries": [],
         "history_runs": [],

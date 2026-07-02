@@ -35,9 +35,10 @@ def _config_from_state() -> dict:
 
 
 def _save_run(trace: dict) -> None:
+    query = trace.get("query", st.session_state.get("query_input", ""))
     st.session_state.current_trace = trace
-    st.session_state.current_query = trace.get("query", st.session_state.current_query)
-    st.session_state.history_queries.append(st.session_state.current_query)
+    st.session_state.current_query = query
+    st.session_state.history_queries.append(query)
     summary = {
         "run_id": trace.get("run_id"),
         "query": trace.get("query"),
@@ -50,6 +51,10 @@ def _save_run(trace: dict) -> None:
     }
     st.session_state.history_runs.append(summary)
     st.session_state.history_runs = st.session_state.history_runs[-10:]
+
+
+def _set_query_input(query: str) -> None:
+    st.session_state.query_input = query
 
 
 def render_query_input() -> None:
@@ -76,13 +81,16 @@ def render_query_input() -> None:
     with button_col:
         st.write("")
         st.write("")
-        if st.button("加载样例到输入框", use_container_width=True):
-            st.session_state.current_query = demo_map[selected]["query"]
-            st.rerun()
+        st.button(
+            "加载样例到输入框",
+            use_container_width=True,
+            on_click=_set_query_input,
+            args=(demo_map[selected]["query"],),
+        )
 
     st.text_area(
         "请输入工业知识问题或安全测试样例",
-        key="current_query",
+        key="query_input",
         height=120,
         placeholder="例如：S7-1500 CPU 的 ERROR 指示灯亮起时，应该如何进行安全排查？",
     )
@@ -112,19 +120,17 @@ def render_query_input() -> None:
     run_col, retrieve_col, clear_col = st.columns([1, 1, 1])
     with run_col:
         if st.button("运行完整链路", type="primary", use_container_width=True):
-            trace = run_pipeline(st.session_state.current_query, _config_from_state())
+            trace = run_pipeline(st.session_state.get("query_input", ""), _config_from_state())
             _save_run(trace)
     with retrieve_col:
         if st.button("仅检索证据", use_container_width=True):
             config = _config_from_state()
             config.update({"enable_query_scan": False, "enable_evidence_scan": False, "enable_mepi": False, "enable_consistency": False})
-            trace = run_pipeline(st.session_state.current_query, config)
+            trace = run_pipeline(st.session_state.get("query_input", ""), config)
             trace["logs"].append("[Frontend] retrieval-only mode requested")
             _save_run(trace)
     with clear_col:
-        if st.button("清空输入", use_container_width=True):
-            st.session_state.current_query = ""
-            st.rerun()
+        st.button("清空输入", use_container_width=True, on_click=_set_query_input, args=("",))
 
 
 def render_chain_status(trace: dict) -> None:
