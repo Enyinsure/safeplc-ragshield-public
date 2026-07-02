@@ -9,17 +9,17 @@
 - `risk_level`: low, medium, or high
 - `evidence_hashes`: hashes of evidence used by the decision
 - `prev_hash` / `current_hash`: hash-chain links
-- `signature_algorithm`: `SM2-compatible-demo` in this lightweight implementation
-- `signature_ok`: demo signature verification status
-- `key_id`: key identifier for later real SM2 integration
+- `signature_algorithm`: legacy demo signature marker for this compatibility report
+- `signature_ok`: legacy demo signature verification status
+- `key_id`: local demo key identifier
 
 ## Verification Result
 
 - OK: True
 - Event count: 3
-- Root hash: `c764a291f58f576e95dc0709fc97e9271fe390be3dbd9ea06128f3909eca0f3f`
+- Root hash: `75c8e6ad3b87f222423cb5fe481a66d99e013f26b3cd7512bb9a09c2742ef282`
 - Tamper detected: False
-- Signature algorithm: SM2-compatible-demo
+- Signature algorithm: legacy-sha256-demo
 
 ## Errors
 
@@ -35,7 +35,7 @@
 
 ## Project-Book Conclusion
 
-The audit chain makes each SafePLC trusted-RAG decision reproducible and tamper-evident. Every event links to the previous hash, records the evidence hashes used by the decision, and reserves signature metadata for a later real SM2/SM3 key-management layer. In this lightweight repository the signature is explicitly marked as a demo-compatible placeholder.
+The audit chain makes each SafePLC trusted-RAG decision reproducible and tamper-evident. Every event links to the previous hash, records the evidence hashes used by the decision, and records legacy demo signature metadata for backwards-compatible reports. For the formal national-cryptography path, use the SM3+SM2+SM4 modules under `safe/trusted_rag/`.
 
 ## Tamper Demo
 

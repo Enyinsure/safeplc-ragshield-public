@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SafePLC-RAGShield Console</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <div>
+            <p class="eyebrow">Trusted Multimodal RAG Security</p>
+            <h1>SafePLC-RAGShield Console</h1>
+          </div>
+        </div>
+        <nav class="topnav" aria-label="Dashboard sections">
+          <a href="#overview">总览</a>
+          <a href="#families">攻击族</a>
+          <a href="#ablation">消融</a>
+          <a href="#trace">审计链</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="workspace" id="overview">
+          <div class="workspace-head">
+            <div>
+              <p class="eyebrow">Current public demo</p>
+              <h2>完整链路评测态势</h2>
+            </div>
+            <div class="segmented" role="tablist" aria-label="Experiment selector">
+              <button class="segment active" type="button" data-view="full" role="tab" aria-selected="true">
+                <span class="segment-icon shield-icon" aria-hidden="true"></span>
+                完整链路
+              </button>
+              <button class="segment" type="button" data-view="baseline" role="tab" aria-selected="false">
+                <span class="segment-icon pulse-icon" aria-hidden="true"></span>
+                Naive
+              </button>
+              <button class="segment" type="button" data-view="ablation" role="tab" aria-selected="false">
+                <span class="segment-icon module-icon" aria-hidden="true"></span>
+                消融
+              </button>
+            </div>
+          </div>
+
+          <div class="metric-grid" id="metricGrid" aria-live="polite"></div>
+
+          <div class="dashboard-grid">
+            <section class="panel chain-panel" aria-labelledby="chainTitle">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Trusted review path</p>
+                  <h3 id="chainTitle">安全链路模块</h3>
+                </div>
+                <span class="status-pill">Gateway off</span>
+              </div>
+              <div class="chain-map" id="chainMap"></div>
+              <div class="module-detail" id="moduleDetail"></div>
+            </section>
+
+            <section class="panel run-panel" aria-labelledby="runTitle">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Run snapshot</p>
+                  <h3 id="runTitle">实验配置</h3>
+                </div>
+                <button class="icon-button" type="button" id="copyCommand" aria-label="复制完整链路命令">
+                  <span class="copy-icon" aria-hidden="true"></span>
+                </button>
+              </div>
+              <dl class="run-list" id="runList"></dl>
+              <pre class="command-box"><code id="benchmarkCommand"></code></pre>
+            </section>
+          </div>
+        </section>
+
+        <section class="section-grid" id="families">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Adversarial 1000</p>
+              <h2>攻击族表现</h2>
+            </div>
+            <div class="filter-row">
+              <label class="search-box">
+                <span class="search-icon" aria-hidden="true"></span>
+                <input id="familySearch" type="search" placeholder="搜索攻击族或 OWASP" />
+              </label>
+              <label class="toggle">
+                <input id="gapToggle" type="checkbox" />
+                <span>只看短板</span>
+              </label>
+            </div>
+          </div>
+          <div class="family-list" id="familyList"></div>
+        </section>
+
+        <section class="section-grid two-column" id="ablation">
+          <section class="panel" aria-labelledby="ablationTitle">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Module ablation 500</p>
+                <h3 id="ablationTitle">模块贡献</h3>
+              </div>
+              <span class="status-pill neutral">Oracle false</span>
+            </div>
+            <div class="ablation-list" id="ablationList"></div>
+          </section>
+
+          <section class="panel" aria-labelledby="owaspTitle">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">OWASP LLM Top 10</p>
+                <h3 id="owaspTitle">风险类别覆盖</h3>
+              </div>
+              <span class="status-pill neutral">1000 cases</span>
+            </div>
+            <div class="owasp-grid" id="owaspGrid"></div>
+          </section>
+        </section>
+
+        <section class="section-grid two-column" id="trace">
+          <section class="panel trace-panel" aria-labelledby="traceTitle">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Audit path</p>
+                <h3 id="traceTitle">单次请求审计链</h3>
+              </div>
+              <span class="status-pill">SM3 hash-chain</span>
+            </div>
+            <div class="trace-flow">
+              <div class="trace-step">
+                <b>1</b>
+                <span>Query scan</span>
+                <small>识别泄露、越权、资源耗尽等输入意图</small>
+              </div>
+              <div class="trace-step">
+                <b>2</b>
+                <span>Chroma + BGE</span>
+                <small>召回 S7-1500 手册证据，禁止 fallback 混入</small>
+              </div>
+              <div class="trace-step">
+                <b>3</b>
+                <span>Evidence guard</span>
+                <small>投毒、间接注入、多模态冲突与一致性检查</small>
+              </div>
+              <div class="trace-step">
+                <b>4</b>
+                <span>Risk policy</span>
+                <small>拒答、安全模板、澄清或放行答案生成</small>
+              </div>
+              <div class="trace-step">
+                <b>5</b>
+                <span>Qwen generator</span>
+                <small>仅在 action=answer 时接收可信证据</small>
+              </div>
+              <div class="trace-step">
+                <b>6</b>
+                <span>Audit bundle</span>
+                <small>记录 flags、action、证据摘要和哈希链</small>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel inspector-panel" aria-labelledby="caseTitle">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Case inspector</p>
+                <h3 id="caseTitle">样例行为</h3>
+              </div>
+              <div class="select-wrap">
+                <select id="caseSelect" aria-label="选择样例">
+                  <option value="direct">Direct prompt injection</option>
+                  <option value="poison">Retrieval poisoning</option>
+                  <option value="benign">Benign control</option>
+                  <option value="leak">System prompt leakage</option>
+                </select>
+              </div>
+            </div>
+            <div class="case-view" id="caseView"></div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

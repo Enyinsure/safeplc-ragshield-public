@@ -23,6 +23,11 @@ The pipeline is implemented in `trusted_query.py`:
 - `evidence_schema.py`: dataclasses for evidence, retrieval traces, decisions, and trusted answers.
 - `hash_chain.py`: deterministic SHA-256 helpers plus append/verify support for JSONL audit chains.
 - `audit_logger.py`: writes `safe/reports/audit_logs/audit_YYYYMMDD.jsonl`.
+- `gm_crypto.py`: pure Python SM3 helpers and canonical JSON hashing.
+- `gm_sm2.py`: local SM2 key generation, digest signing, and verification.
+- `gm_sm4.py`: pure Python SM4 block cipher and SM4-CBC helpers.
+- `multimodal_gm_sm2_audit_logger.py`: SM3+SM2 multimodal audit records with `prev_hash` and `record_hash`.
+- `audit_sm4_sealer.py`: SM4-CBC local sealing and verification for audit JSONL files.
 - `integrity_checker.py`: creates and verifies data manifests under `safe/reports/manifests`.
 - `poison_scanner.py`: Chinese/English rule scanner for prompt injection, fake authorization, safety bypass, and dangerous PLC actions.
 - `trusted_query.py`: offline trusted-answer pipeline.
@@ -62,6 +67,11 @@ Then run the same commands below. If `chromadb` is installed and the Chroma dire
 python -m safe.trusted_rag.paths
 python -m safe.trusted_rag.integrity_checker
 python -m safe.trusted_rag.redteam_eval
+python -m safe.trusted_rag.gm_crypto
+python -m safe.trusted_rag.gm_sm2
+python -m safe.trusted_rag.gm_sm4
+python -m safe.trusted_rag.multimodal_gm_sm2_audit_logger
+python -m safe.trusted_rag.audit_sm4_sealer --seal
 python -m safe.secguard.demo_cli "S7-1500 CPU 故障灯亮应该如何排查？"
 ```
 

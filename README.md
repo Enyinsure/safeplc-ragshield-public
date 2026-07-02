@@ -6,9 +6,22 @@ The full RAG vector database, raw S7 assets, model weights, runtime logs, and so
 
 Main task: see `CODEX_TASK.md`.
 
+## Frontend demo
+
+A static proposal/demo dashboard is available in `frontend/`. It contains the
+public-safe benchmark summary, ablation table, attack-family view, and audit-chain
+flow without bundling private datasets, model weights, runtime logs, or external
+competition images.
+
+```bash
+python -m http.server 4173
+```
+
+Open `http://127.0.0.1:4173/frontend/`.
+
 ## Trusted RAG security layer
 
-The trusted security layer lives under `safe/trusted_rag/` with a small CLI in `safe/secguard/demo_cli.py`. It adds offline path resolution, rule-based poison scanning, indirect prompt-injection checks, evidence consistency checks, risk-policy decisions, hash-chain audit logs, integrity manifests, and red-team evaluation.
+The trusted security layer lives under `safe/trusted_rag/` with a small CLI in `safe/secguard/demo_cli.py`. It adds offline path resolution, rule-based poison scanning, indirect prompt-injection checks, evidence consistency checks, risk-policy decisions, SM3/SM2/SM4 audit protection, hash-chain audit logs, integrity manifests, and red-team evaluation.
 
 It does not require online APIs or full Chroma indexes in this lightweight repo. When the full Chroma paths are unavailable, retrieval falls back to the configured sample JSONL files.
 
@@ -16,6 +29,11 @@ It does not require online APIs or full Chroma indexes in this lightweight repo.
 python -m safe.trusted_rag.paths
 python -m safe.trusted_rag.integrity_checker
 python -m safe.trusted_rag.redteam_eval
+python -m safe.trusted_rag.gm_crypto
+python -m safe.trusted_rag.gm_sm2
+python -m safe.trusted_rag.gm_sm4
+python -m safe.trusted_rag.multimodal_gm_sm2_audit_logger
+python -m safe.trusted_rag.audit_sm4_sealer --seal
 python -m safe.secguard.demo_cli "S7-1500 CPU 故障灯亮应该如何排查？"
 ```
 

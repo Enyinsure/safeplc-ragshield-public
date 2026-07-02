@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from . import paths
+from .audit_sm4_sealer import seal_audit_log
 from .gm_crypto import canonical_json_hash, sm3_hash_text
 from .gm_sm2 import load_or_create_keys, sign_digest, verify_digest
 
@@ -92,6 +93,14 @@ def append_gm_sm2_audit(payload: Dict[str, Any], audit_dir: str | Path | None = 
     with path.open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
     record["audit_path"] = str(path)
+    try:
+        seal_result = seal_audit_log(path)
+        record["sm4_encryption_algorithm"] = seal_result["algorithm"]
+        record["sm4_sealed_path"] = seal_result["sealed_path"]
+        record["sm4_seal_ok"] = True
+    except Exception as exc:
+        record["sm4_seal_ok"] = False
+        record["sm4_seal_error"] = str(exc)
     return record
 
 
@@ -148,6 +157,7 @@ def main() -> int:
     result = verify_gm_sm2_audit(path)
     print("hash_algorithm = SM3")
     print("signature_algorithm = SM2")
+    print("encryption_algorithm = SM4-CBC-PKCS7")
     print(f"hash_chain_ok = {result['hash_chain_ok']}")
     print(f"sm2_signature_ok = {result['sm2_signature_ok']}")
     print(f"public_key_fingerprint_ok = {result['public_key_fingerprint_ok']}")

@@ -175,10 +175,10 @@ M-EPI treats multimodal evidence pollution as a measurable pre-answer risk. It d
 - `decision`: trusted decision such as answer, quarantine, or refuse
 - `risk_level`: low, medium, or high
 - `evidence_hashes`: hashes of evidence used by the decision
-- `prev_hash` / `current_hash`: hash-chain links
-- `signature_algorithm`: `SM2-compatible-demo` in this lightweight implementation
-- `signature_ok`: demo signature verification status
-- `key_id`: key identifier for later real SM2 integration
+- `prev_hash` / `record_hash`: SM3 hash-chain links
+- `signature_algorithm`: SM2 digest signature over `record_hash`
+- `encryption_algorithm`: SM4-CBC-PKCS7 local audit-log sealing
+- `key_id`: local GM key identifier or public-key fingerprint
 
 ## Verification Result
 
@@ -186,7 +186,8 @@ M-EPI treats multimodal evidence pollution as a measurable pre-answer risk. It d
 - Event count: 3
 - Root hash: `c764a291f58f576e95dc0709fc97e9271fe390be3dbd9ea06128f3909eca0f3f`
 - Tamper detected: False
-- Signature algorithm: SM2-compatible-demo
+- Signature algorithm: SM2
+- Encryption algorithm: SM4-CBC-PKCS7
 
 ## Errors
 
@@ -202,7 +203,7 @@ M-EPI treats multimodal evidence pollution as a measurable pre-answer risk. It d
 
 ## Project-Book Conclusion
 
-The audit chain makes each SafePLC trusted-RAG decision reproducible and tamper-evident. Every event links to the previous hash, records the evidence hashes used by the decision, and reserves signature metadata for a later real SM2/SM3 key-management layer. In this lightweight repository the signature is explicitly marked as a demo-compatible placeholder.
+The audit chain makes each SafePLC trusted-RAG decision reproducible and tamper-evident. Every event links to the previous hash, records the evidence hashes used by the decision, signs the SM3 record hash with SM2, and seals local audit JSONL files with SM4-CBC. The public repository includes verification code but does not publish local private keys.
 
 ## Tamper Demo
 

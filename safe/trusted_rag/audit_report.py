@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Audit-chain report helpers with SM2-compatible demo signatures."""
+"""Legacy SHA-256 audit-chain report helpers.
+
+The formal national-cryptography audit path is implemented by
+multimodal_gm_sm2_audit_logger.py plus audit_sm4_sealer.py.
+"""
 
 from __future__ import annotations
 
@@ -13,7 +17,7 @@ from typing import Any, Dict, Iterable, List
 from .hash_chain import hash_json, sha256_text
 
 
-SIGNATURE_ALGORITHM = "SM2-compatible-demo"
+SIGNATURE_ALGORITHM = "legacy-sha256-demo"
 
 
 def _utc_now() -> str:
@@ -30,7 +34,7 @@ def compute_event_hash(event: Dict[str, Any]) -> str:
 
 
 def _signature_for(current_hash: str, key_id: str) -> str:
-    return sha256_text(f"{key_id}:{current_hash}:sm2-demo")
+    return sha256_text(f"{key_id}:{current_hash}:legacy-demo")
 
 
 def build_hash_chain(events: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -192,9 +196,9 @@ def export_audit_report(events: List[Dict[str, Any]], verify_result: Dict[str, A
         "- `risk_level`: low, medium, or high",
         "- `evidence_hashes`: hashes of evidence used by the decision",
         "- `prev_hash` / `current_hash`: hash-chain links",
-        "- `signature_algorithm`: `SM2-compatible-demo` in this lightweight implementation",
-        "- `signature_ok`: demo signature verification status",
-        "- `key_id`: key identifier for later real SM2 integration",
+        "- `signature_algorithm`: legacy demo signature marker for this compatibility report",
+        "- `signature_ok`: legacy demo signature verification status",
+        "- `key_id`: local demo key identifier",
         "",
         "## Verification Result",
         "",
@@ -232,8 +236,8 @@ def export_audit_report(events: List[Dict[str, Any]], verify_result: Dict[str, A
             "",
             "The audit chain makes each SafePLC trusted-RAG decision reproducible and tamper-evident. "
             "Every event links to the previous hash, records the evidence hashes used by the decision, "
-            "and reserves signature metadata for a later real SM2/SM3 key-management layer. In this "
-            "lightweight repository the signature is explicitly marked as a demo-compatible placeholder.",
+            "and records legacy demo signature metadata for backwards-compatible reports. For the formal "
+            "national-cryptography path, use the SM3+SM2+SM4 modules under `safe/trusted_rag/`.",
             "",
         ]
     )

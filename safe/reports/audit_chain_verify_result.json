@@ -3,10 +3,10 @@
     "ok": true,
     "count": 3,
     "errors": [],
-    "root_hash": "c764a291f58f576e95dc0709fc97e9271fe390be3dbd9ea06128f3909eca0f3f",
+    "root_hash": "75c8e6ad3b87f222423cb5fe481a66d99e013f26b3cd7512bb9a09c2742ef282",
     "tamper_detected": false,
-    "verified_at": "2026-06-28T10:12:47.727787Z",
-    "signature_algorithm": "SM2-compatible-demo"
+    "verified_at": "2026-07-02T07:24:18.706770Z",
+    "signature_algorithm": "legacy-sha256-demo"
   },
   "tampered": {
     "ok": false,
@@ -14,9 +14,9 @@
     "errors": [
       "evt_mepi_002: current_hash mismatch"
     ],
-    "root_hash": "c764a291f58f576e95dc0709fc97e9271fe390be3dbd9ea06128f3909eca0f3f",
+    "root_hash": "75c8e6ad3b87f222423cb5fe481a66d99e013f26b3cd7512bb9a09c2742ef282",
     "tamper_detected": true,
-    "verified_at": "2026-06-28T10:12:47.727885Z",
-    "signature_algorithm": "SM2-compatible-demo"
+    "verified_at": "2026-07-02T07:24:18.706873Z",
+    "signature_algorithm": "legacy-sha256-demo"
   }
 }
