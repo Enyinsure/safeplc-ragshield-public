@@ -49,6 +49,9 @@ def apply_global_style() -> None:
         .tone-info, .tone-clarify {
             background: #eff6ff; border-color: #3b82f6; color: #1e40af;
         }
+        .tone-out_of_scope, .tone-skipped {
+            background: #f1f5f9; border-color: #94a3b8; color: #334155;
+        }
         .tone-neutral, .tone-disabled {
             background: #f9fafb; border-color: #d1d5db; color: #374151;
         }

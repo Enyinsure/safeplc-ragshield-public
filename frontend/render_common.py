@@ -17,6 +17,7 @@ ACTION_LABELS = {
     "refuse": "拒答",
     "blocked_poison": "投毒阻断",
     "blocked_multi_attack": "混合攻击阻断",
+    "out_of_scope": "超出当前工业知识库可信 RAG 范围",
 }
 
 
@@ -26,6 +27,8 @@ def status_tone(status: str | bool | None) -> str:
         return "trusted"
     if value in {"clarify", "info"}:
         return "clarify"
+    if value in {"out_of_scope", "skipped"}:
+        return "out_of_scope"
     if value in {"suspicious", "warning", "safe_template"}:
         return "suspicious"
     if value in {"blocked", "blocked_poison", "refuse", "critical", "high"}:

@@ -22,6 +22,54 @@ except Exception:  # pragma: no cover - fallback for standalone frontend copies.
 Trace = Dict[str, Any]
 ROOT = Path(__file__).resolve().parents[1]
 DEMO_CASES_PATH = ROOT / "data" / "demo_cases.json"
+INDUSTRIAL_DOMAIN_KEYWORDS = [
+    "S7-1500",
+    "S7",
+    "PLC",
+    "CPU",
+    "模块",
+    "BF灯",
+    "BF 灯",
+    "ERROR灯",
+    "ERROR 灯",
+    "PROFINET",
+    "PROFIBUS",
+    "I/O",
+    "诊断缓冲区",
+    "报警",
+    "故障",
+    "通信",
+    "工控",
+    "工业控制",
+    "自动化",
+    "西门子",
+    "变频器",
+    "联锁",
+    "安全保护",
+    "传感器",
+    "执行器",
+    "Chroma",
+    "BGE",
+    "RAG",
+    "证据投毒",
+    "提示注入",
+    "哈希链",
+    "SM3",
+    "国密",
+    "审计",
+]
+MODEL_COMPARISON_KEYWORDS = [
+    "豆包",
+    "doubao",
+    "qwen",
+    "通义千问",
+    "kimi",
+    "deepseek",
+    "gpt",
+    "大模型",
+    "模型谁更强",
+    "谁更厉害",
+]
 
 
 def _now() -> str:
@@ -37,6 +85,12 @@ def _contains_any(text: str, keywords: Iterable[str]) -> bool:
     return any(keyword.lower() in lowered for keyword in keywords)
 
 
+def is_industrial_domain(query: str) -> bool:
+    """Return whether the query is in the SafePLC trusted RAG scope."""
+
+    return _contains_any(query, INDUSTRIAL_DOMAIN_KEYWORDS)
+
+
 def load_demo_cases() -> List[dict]:
     if DEMO_CASES_PATH.exists():
         return json.loads(DEMO_CASES_PATH.read_text(encoding="utf-8"))
@@ -49,6 +103,10 @@ def load_demo_cases() -> List[dict]:
 def _is_s7_intro_query(query: str) -> bool:
     lowered = query.lower().replace(" ", "")
     return "s7-1500" in lowered and any(keyword in query for keyword in ["是什么", "介绍", "简介", "说明"])
+
+
+def _is_general_model_comparison(query: str) -> bool:
+    return _contains_any(query, MODEL_COMPARISON_KEYWORDS)
 
 
 def classify_query(query: str) -> dict:
@@ -77,25 +135,29 @@ def classify_query(query: str) -> dict:
     if _contains_any(query, vague_keywords) and not has_model_hint:
         labels.append("missing_model_or_order")
 
+    if "sensitive_disclosure" in labels or "system_prompt_leakage" in labels:
+        return {"kind": "sensitive", "labels": sorted(set(labels)), "risk": "high", "action": "refuse"}
+    if "dangerous_plc_action" in labels:
+        return {"kind": "dangerous", "labels": sorted(set(labels)), "risk": "critical", "action": "refuse"}
     if "retrieval_poisoning" in labels and ("direct_prompt_injection" in labels or "supply_chain_spoof" in labels):
         return {"kind": "mixed_attack", "labels": sorted(set(labels)), "risk": "critical", "action": "blocked_multi_attack"}
     if "retrieval_poisoning" in labels:
         return {"kind": "poison", "labels": sorted(set(labels)), "risk": "critical", "action": "blocked_poison"}
-    if "dangerous_plc_action" in labels:
-        return {"kind": "dangerous", "labels": sorted(set(labels)), "risk": "critical", "action": "refuse"}
-    if "sensitive_disclosure" in labels or "system_prompt_leakage" in labels:
-        return {"kind": "sensitive", "labels": sorted(set(labels)), "risk": "high", "action": "refuse"}
     if "supply_chain_spoof" in labels or "direct_prompt_injection" in labels:
         return {"kind": "spoof", "labels": sorted(set(labels)), "risk": "high", "action": "safe_template"}
-    if "technical_misinformation" in labels:
-        return {"kind": "misinformation", "labels": sorted(set(labels)), "risk": "high", "action": "safe_template"}
     if "missing_model_or_order" in labels:
         return {"kind": "clarify", "labels": labels, "risk": "medium", "action": "clarify"}
-    return {"kind": "normal", "labels": [], "risk": "low", "action": "answer"}
+    if _is_general_model_comparison(query):
+        return {"kind": "general_model_comparison", "labels": ["out_of_scope"], "risk": "low", "action": "out_of_scope"}
+    if is_industrial_domain(query):
+        if "technical_misinformation" in labels:
+            return {"kind": "misinformation", "labels": sorted(set(labels)), "risk": "high", "action": "safe_template"}
+        return {"kind": "industrial_normal_answer", "labels": [], "risk": "low", "action": "answer"}
+    return {"kind": "out_of_scope", "labels": ["out_of_scope"], "risk": "low", "action": "out_of_scope"}
 
 
 def _make_evidence(query: str, classification: dict, top_k: int, enable_retrieval: bool) -> list[dict]:
-    if not enable_retrieval:
+    if classification["action"] == "out_of_scope" or not enable_retrieval:
         return []
 
     overview = {
@@ -221,8 +283,9 @@ def build_normal_answer(query: str) -> str:
         )
     if _contains_any(query, ["bf", "profinet", "通信"]):
         return (
-            "这类问题通常需要先检查 PROFINET 设备名、IP 配置、交换机端口、网络拓扑、站点状态和通信诊断缓冲区。"
-            "如果 BF 灯持续亮起，应记录故障时间、模块型号和网络连接状态，再按可信手册逐项排查。"
+            "BF 通常表示 Bus Fault，即总线或通信故障。在 S7-1500 或相关分布式 I/O 场景中，"
+            "BF 灯亮通常需要检查 PROFINET/PROFIBUS 设备名、IP 配置、站点连接、交换机端口、"
+            "网络拓扑、站点状态和通信诊断缓冲区。"
         )
     if _contains_any(query, ["error", "故障灯", "报警", "诊断"]):
         return (
@@ -230,9 +293,26 @@ def build_normal_answer(query: str) -> str:
             "排查过程中应保留现场证据，避免直接修改保护逻辑或强制输出。"
         )
     return (
-        "这是一个普通低风险工业知识问题。Demo 后端未检测到明显注入、投毒、敏感信息请求或危险控制意图，"
-        "因此返回安全的默认回答：请结合设备型号、订货号、固件版本、报警代码和可信手册进行核验，"
-        "涉及现场控制动作时应遵守安全规程并经过人工复核。"
+        "该问题属于当前工业 PLC 知识库范围，且未检测到明显注入、投毒、敏感信息请求或危险控制意图。"
+        "请结合设备型号、订货号、固件版本、报警代码和可信手册进行核验；涉及现场控制动作时，"
+        "应遵守安全规程并经过人工复核。"
+    )
+
+
+def _build_out_of_scope_answer(query: str, kind: str) -> str:
+    if kind == "general_model_comparison":
+        return (
+            "这个问题属于通用大模型比较，不属于当前 S7-1500 工业知识库可信 RAG 的检索范围。"
+            "为了避免把工业手册证据错误用于无关问题，系统本次不调用 Chroma/BGE 工业检索链。"
+            "若从一般角度比较，Qwen 更偏开源模型与本地部署生态，豆包更偏产品化应用与字节生态；"
+            "具体谁更强需要看任务、版本、评测集、上下文长度、工具调用和部署成本。"
+            "你可以改问：‘Qwen 是否适合作为本项目本地生成模型？’或"
+            "‘Qwen2.5-VL-3B 是否适合工业 RAG 前端演示？’。"
+        )
+    return (
+        "该问题不属于当前工业 PLC 知识库问答范围。系统不会调用工业知识库检索，"
+        "避免生成与证据无关的回答。请改为输入 S7-1500、PLC 故障诊断、工业 RAG 安全、"
+        "证据投毒或审计链相关问题。"
     )
 
 
@@ -263,6 +343,14 @@ def _make_answer(action: str, evidence: list[dict], query: str) -> dict:
         return {
             "type": "blocked",
             "content": "检测到检索证据投毒或混合攻击，污染证据已被阻断且未进入模型上下文。建议重新检索可信来源或进入人工复核。",
+            "citations": [],
+            "used_evidence_count": 0,
+        }
+    if action == "out_of_scope":
+        kind = classify_query(query)["kind"]
+        return {
+            "type": "out_of_scope",
+            "content": _build_out_of_scope_answer(query, kind),
             "citations": [],
             "used_evidence_count": 0,
         }
@@ -307,7 +395,7 @@ def _audit_records(query: str, action: str, risk_level: str, enable_audit: bool)
         prev = digest
     audit = {
         "enabled": True,
-        "required": action != "answer" or risk_level != "low",
+        "required": (action not in {"answer", "out_of_scope"}) or risk_level != "low",
         "algorithm": "SM3",
         "event_id": f"audit_{sm3_hash_text(query)[:12]}",
         "prev_hash": records[-2]["digest"] if len(records) >= 2 else "",
@@ -332,28 +420,37 @@ def run_demo_pipeline(
 ) -> Trace:
     started = time.perf_counter()
     query = (query or "").strip() or "请介绍 S7-1500。"
-    classification = classify_query(query) if enable_query_scan else {"kind": "normal", "labels": [], "risk": "low", "action": "answer"}
+    classification = classify_query(query)
     action = classification["action"]
     risk_level = classification["risk"]
+    is_out_of_scope = action == "out_of_scope"
 
     evidence = _make_evidence(query, classification, top_k, enable_retrieval)
     blocked_count = sum(1 for item in evidence if item["status"] == "blocked_poison")
     suspicious_count = sum(1 for item in evidence if item["status"] == "suspicious")
     trusted_count = sum(1 for item in evidence if item["status"] == "trusted")
 
-    if not enable_evidence_scan:
+    if is_out_of_scope:
+        evidence_scan_status = "skipped"
+        poison_detected = False
+    elif not enable_evidence_scan:
         evidence_scan_status = "disabled"
         poison_detected = False
     else:
         evidence_scan_status = "blocked_poison" if blocked_count else ("suspicious" if suspicious_count else "trusted")
         poison_detected = blocked_count > 0
 
-    if not enable_mepi:
+    if is_out_of_scope:
+        mepi_status = "skipped"
+    elif not enable_mepi:
         mepi_status = "disabled"
     else:
         mepi_status = "blocked_poison" if action in {"blocked_poison", "blocked_multi_attack"} else ("suspicious" if suspicious_count else "trusted")
 
-    if not enable_consistency:
+    if is_out_of_scope:
+        consistency_status = "skipped"
+        consistency_passed = False
+    elif not enable_consistency:
         consistency_status = "disabled"
         consistency_passed = False
     else:
@@ -371,7 +468,29 @@ def run_demo_pipeline(
         "safe_template": ["检测到伪造授权或提示注入风险。", "输出安全模板并要求可信来源复核。"],
         "blocked_poison": ["检索证据中出现间接提示注入或污染内容。", "污染证据未进入模型上下文。", "策略输出 blocked_poison。"],
         "blocked_multi_attack": ["同时检测到查询侧和检索侧风险信号。", "混合攻击证据链被阻断。"],
+        "out_of_scope": ["问题不属于当前工业知识库可信 RAG 范围。", "系统跳过 Chroma/BGE 工业检索链。", "避免把工业手册证据错误用于无关问题。"],
     }[action]
+
+    query_scan_status = (
+        "trusted"
+        if is_out_of_scope
+        else "blocked"
+        if action in {"refuse", "safe_template", "blocked_multi_attack"}
+        else "suspicious"
+        if action == "clarify"
+        else "trusted"
+    )
+    retrieval_status = (
+        "skipped"
+        if is_out_of_scope
+        else "disabled"
+        if not enable_retrieval
+        else "blocked_poison"
+        if blocked_count
+        else "suspicious"
+        if suspicious_count
+        else "trusted"
+    )
 
     return {
         "query": query,
@@ -380,20 +499,21 @@ def run_demo_pipeline(
         "timestamp": _now(),
         "latency_ms": latency_ms,
         "query_scan": {
-            "status": "blocked" if action in {"refuse", "safe_template", "blocked_multi_attack"} else ("suspicious" if action == "clarify" else "trusted"),
+            "status": query_scan_status,
             "risk_level": risk_level,
             "labels": classification["labels"],
-            "reason": "规则化 demo backend 已完成查询侧扫描。",
+            "reason": "Domain Guard 已判断问题超出工业知识库范围。" if is_out_of_scope else "规则化 demo backend 已完成查询侧扫描。",
             "latency_ms": 24 if enable_query_scan else 0,
         },
         "retrieval": {
-            "status": "disabled" if not enable_retrieval else ("blocked_poison" if blocked_count else ("suspicious" if suspicious_count else "trusted")),
+            "status": retrieval_status,
             "backend": "Chroma + BGE",
             "collection": "s7_1500_manual",
             "top_k": top_k,
             "retrieved_count": len(evidence),
             "fallback": False,
-            "latency_ms": 118 if enable_retrieval else 0,
+            "reason": "问题不属于工业知识库范围，本次不调用 Chroma/BGE 检索。" if is_out_of_scope else "工业知识库检索完成。",
+            "latency_ms": 0 if is_out_of_scope else (118 if enable_retrieval else 0),
         },
         "evidence": evidence,
         "evidence_scan": {
@@ -402,21 +522,21 @@ def run_demo_pipeline(
             "blocked_count": blocked_count,
             "trusted_count": trusted_count,
             "labels": ["retrieval_poisoning"] if blocked_count else [],
-            "reason": "污染证据会被标记为 blocked_poison，且 used_in_context=False。",
-            "latency_ms": 38 if enable_evidence_scan else 0,
+            "reason": "无检索证据，无需执行证据投毒扫描。" if is_out_of_scope else "污染证据会被标记为 blocked_poison，且 used_in_context=False。",
+            "latency_ms": 0 if is_out_of_scope else (38 if enable_evidence_scan else 0),
         },
         "mepi": {
             "status": mepi_status,
             "detected": action in {"blocked_poison", "blocked_multi_attack"},
             "labels": ["cross_evidence_conflict"] if suspicious_count else [],
-            "reason": "M-EPI 汇聚文本、检索和证据风险信号。",
-            "latency_ms": 20 if enable_mepi else 0,
+            "reason": "无检索证据，无需执行间接提示注入检测。" if is_out_of_scope else "M-EPI 汇聚文本、检索和证据风险信号。",
+            "latency_ms": 0 if is_out_of_scope else (20 if enable_mepi else 0),
         },
         "consistency": {
             "status": consistency_status,
             "passed": consistency_passed,
-            "reason": "回答只允许引用 used_in_context=True 的可信证据。",
-            "latency_ms": 15 if enable_consistency else 0,
+            "reason": "无证据链，不进行一致性检查。" if is_out_of_scope else "回答只允许引用 used_in_context=True 的可信证据。",
+            "latency_ms": 0 if is_out_of_scope else (15 if enable_consistency else 0),
         },
         "policy": {
             "action": action,
